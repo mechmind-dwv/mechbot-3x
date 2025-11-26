@@ -1,0 +1,22 @@
+#!/bin/bash
+echo "🔍 Ejecutando pre-commit checks..."
+
+# Verificar que Rust está instalado
+if ! command -v cargo &> /dev/null; then
+    echo "❌ Error: Cargo no encontrado"
+    exit 1
+fi
+
+# Formatear código
+echo "📝 Verificando formato..."
+cargo fmt -- --check
+
+# Linter
+echo "🔧 Ejecutando clippy..."
+cargo clippy -- -D warnings
+
+# Tests básicos
+echo "🧪 Ejecutando tests..."
+cargo test --lib
+
+echo "✅ Pre-commit checks pasados!"
