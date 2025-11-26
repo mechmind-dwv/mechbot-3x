@@ -1,33 +1,31 @@
-# Binarios de Rust
+# Binarios compilados
 /target/
 **/*.rs.bk
 
-# Archivos de configuración local
-.env
-*.local.toml
-config.local.toml
+# Ejecutables
+/mechbot-3x
+/mechbot-celebracion
+/mechbot-evolucionado
+/mechbot_simple.rs
+/mechbot_mejorado.rs
+/mechbot_celebracion.rs
+/mechbot_evolucionado.rs
 
-# Logs
-*.log
-logs/
-
-# Archivos del sistema
+# Archivos de sistema
 .DS_Store
 Thumbs.db
 
-# Archivos de IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Logs
+*.log
+/logs/
+
+# Archivos de configuración local
+config.local.toml
 
 # Backup files
 *.backup
 *.old
 
-# Docker
-Dockerfile
-docker-compose.yml
-
-# Sistema
-/systemd/
+# Directorios de datos temporales
+/data/
+/perf.data

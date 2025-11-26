@@ -1,5 +1,5 @@
 // tests/integration_test.rs
-use mechbot_3x::{Robot, Config};
+use mechbot_3x::{Config, Robot};
 
 #[tokio::test]
 async fn test_robot_initialization() {

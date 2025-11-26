@@ -6,6 +6,7 @@ use std::fs;
 pub struct Config {
     pub robot: RobotConfig,
     pub sensors: SensorsConfig,
+    pub navigation: NavigationConfig,
     pub api: ApiConfig,
     pub logging: LoggingConfig,
 }
@@ -19,42 +20,51 @@ pub struct RobotConfig {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct SensorsConfig {
-    pub lidar_port: Option<String>,
-    pub camera_index: Option<u32>,
-    pub sensor_threshold: f64,
+    pub lidar_port: String,
+    pub lidar_baudrate: u32,
+    pub camera_index: u32,
+    pub camera_fps: Option<u32>,
+    pub imu_i2c_address: u8,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct NavigationConfig {
+    pub max_speed: Option<f64>,
+    pub max_acceleration: Option<f64>,
+    pub planning_frequency: Option<u32>,
+    pub obstacle_distance_threshold: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ApiConfig {
     pub rest_port: u16,
     pub websocket_port: u16,
-    pub api_key: Option<String>,
+    pub enable_cors: Option<bool>,
+    pub api_key_required: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct LoggingConfig {
-    pub level: String,
-    pub output: String,
+    pub level: Option<String>,
+    pub output: Option<String>,
+    pub max_file_size: Option<String>,
+    pub rotate: Option<bool>,
 }
 
 impl Config {
     pub fn from_file(path: &str) -> Result<Self> {
         let content = fs::read_to_string(path)
-            .with_context(|| format!("No se pudo leer el archivo de configuración: {}", path))?;
-        
+            .with_context(|| format!("Failed to read config file: {}", path))?;
+
         let config: Self = toml::from_str(&content)
-            .with_context(|| format!("Error parseando configuración: {}", path))?;
-        
+            .with_context(|| format!("Failed to parse config file: {}", path))?;
+
         Ok(config)
     }
 
     pub fn save_to_file(&self, path: &str) -> Result<()> {
-        let toml_content = toml::to_string_pretty(self)
-            .context("Error serializando configuración a TOML")?;
-        
-        fs::write(path, toml_content)
-            .with_context(|| format!("Error guardando configuración en: {}", path))?;
-        
+        let content = toml::to_string_pretty(self)?;
+        fs::write(path, content)?;
         Ok(())
     }
 }
@@ -63,23 +73,34 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             robot: RobotConfig {
-                name: "MechBot-3x-Default".to_string(),
+                name: "MechBot-3x-001".to_string(),
                 model: "MB3X".to_string(),
                 version: "3.0.0".to_string(),
             },
             sensors: SensorsConfig {
                 lidar_port: Some("/dev/ttyUSB0".to_string()),
+                lidar_baudrate: Some(115200),
                 camera_index: Some(0),
-                sensor_threshold: 100.0,
+                camera_fps: Some(30),
+                imu_i2c_address: Some(104),
+            },
+            navigation: NavigationConfig {
+                max_speed: Some(2.0),
+                max_acceleration: Some(1.0),
+                planning_frequency: Some(10),
+                obstacle_distance_threshold: Some(0.5),
             },
             api: ApiConfig {
-                rest_port: 8080,
-                websocket_port: 8081,
-                api_key: None,
+                rest_port: Some(8080),
+                websocket_port: Some(8081),
+                enable_cors: Some(true),
+                api_key_required: Some(true),
             },
             logging: LoggingConfig {
-                level: "info".to_string(),
-                output: "console".to_string(),
+                level: Some("info".to_string()),
+                output: Some("logs/mechbot.log".to_string()),
+                max_file_size: Some("10MB".to_string()),
+                rotate: Some(true),
             },
         }
     }

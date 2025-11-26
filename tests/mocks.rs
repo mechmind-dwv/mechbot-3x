@@ -7,10 +7,10 @@ impl MockLidar {
     pub fn new() -> Self {
         Self { data: vec![] }
     }
-    
+
     pub fn with_sample_data() -> Self {
-        Self { 
-            data: vec![Point::new(1.0, 0.0), Point::new(2.0, 0.0)] 
+        Self {
+            data: vec![Point::new(1.0, 0.0), Point::new(2.0, 0.0)],
         }
     }
 }

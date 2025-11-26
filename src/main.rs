@@ -1,50 +1,106 @@
+use mechbot_3x::Sensor;
 use anyhow::Result;
-use log::{info, error};
-
-mod config;
-mod sensors;
-
-use crate::config::Config;
+use log::{info, warn};
+use mechbot_3x::{initialize_system, Config};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Inicializar logging
+    // Inicializar logger
     env_logger::init();
-    
-    info!("🚀 Iniciando MechBot-3x...");
+
+    info!("🚀 MechBot-3x Inicializando Sistema Cósmico...");
 
     // Cargar configuración
     let config = match Config::from_file("config.toml") {
         Ok(cfg) => {
-            info!("✅ Configuración cargada desde config.toml");
+            info!("✅ Configuración cargada: {}", cfg.robot.name);
             cfg
         }
         Err(e) => {
-            info!("⚠️  Usando configuración por defecto: {}", e);
+            warn!(
+                "⚠️  Error cargando config.toml: {}. Usando configuración por defecto.",
+                e
+            );
             Config::default()
         }
     };
 
-    info!("🤖 Robot: {} v{}", config.robot.name, config.robot.version);
-    info!("🌐 API en puerto: {}", config.api.rest_port);
+    info!("🔧 Inicializando sistema completo...");
 
-    // Ejemplo de uso del procesador de sensores
-    let sensor_readings = vec![25.5, 30.2, 45.8, 60.1];
-    
-    match sensors::process_sensor_data(&sensor_readings) {
-        Ok(_) => info!("✅ Procesamiento de sensores exitoso"),
-        Err(e) => error!("❌ Error procesando sensores: {}", e),
+    match initialize_system(config).await {
+        Ok((lidar, camera, imu, navigation, vision, mut api_server)) => {
+            info!("✅ Todos los sistemas inicializados correctamente!");
+
+            // Mostrar estado de los componentes
+            info!("📊 Estado del sistema:");
+            info!(
+                "   - LIDAR: {}",
+                if lidar.get_status().connected {
+                    "🟢 Conectado"
+                } else {
+                    "🔴 Desconectado"
+                }
+            );
+            info!(
+                "   - Cámara: {}",
+                if camera.get_status().connected {
+                    "🟢 Conectada"
+                } else {
+                    "🔴 Desconectada"
+                }
+            );
+            info!(
+                "   - IMU: {}",
+                if imu.get_status().connected {
+                    "🟢 Conectado"
+                } else {
+                    "🔴 Desconectado"
+                }
+            );
+            info!("   - Visión: {}", "🟢 Modelos cargados");
+            info!(
+                "   - API: {}",
+                if api_server.is_running() {
+                    "🟢 Servidor activo"
+                } else {
+                    "🔴 Servidor inactivo"
+                }
+            );
+            info!("   - Navegación: 🟢 Controlador listo");
+
+            // Ejecutar una misión de demostración simple
+            info!("🎯 Iniciando misión de demostración...");
+
+            // Simular un pequeño recorrido
+            let demo_targets = [(2.0, 0.0), (2.0, 2.0), (0.0, 0.0)];
+
+            for (i, &target) in demo_targets.iter().enumerate() {
+                info!("📍 Navegando al punto {}: {:?}", i + 1, target);
+
+                // En una implementación real aquí iría la lógica de navegación
+                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+
+                info!("✅ Punto {} alcanzado", i + 1);
+            }
+
+            info!("🎉 Misión de demostración completada!");
+
+            // Mantener el sistema corriendo por un tiempo
+            info!("⏰ Sistema operativo por 10 segundos...");
+            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+
+            api_server.stop();
+            info!("🛑 Sistema apagado correctamente");
+        }
+        Err(e) => {
+            eprintln!("❌ Error inicializando el sistema: {}", e);
+            eprintln!("💡 Posibles soluciones:");
+            eprintln!("   - Verificar que config.toml existe y es válido");
+            eprintln!("   - Revisar dependencias con 'cargo check'");
+            eprintln!("   - Ejecutar 'cargo clean && cargo build'");
+            return Err(e);
+        }
     }
 
-    // Filtrar datos
-    let filtered = sensors::filter_sensor_data(&sensor_readings, 50.0);
-    info!("📊 Datos filtrados: {:?}", filtered);
-
-    info!("🎯 MechBot-3x listo para operar");
-    
-    // Mantener el programa corriendo
-    tokio::signal::ctrl_c().await?;
-    info!("👋 Apagando MechBot-3x...");
-    
     Ok(())
 }

@@ -1,0 +1,18 @@
+[robot]
+name = "MECHBOT"
+model = "3X"
+version = "3.0.0"
+
+[sensors]
+lidar_port = "/dev/ttyUSB0"
+camera_index = 0
+sensor_threshold = 1000.0
+
+[api]
+rest_port = 8088
+websocket_port = 8089
+api_key = ""
+
+[logging]
+level = "info"
+output = "console"

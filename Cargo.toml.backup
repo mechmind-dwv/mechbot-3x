@@ -5,10 +5,62 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-toml = "0.8"
-serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+log = "0.4"
+env_logger = "0.10"
 
+# Configuración EXPLÍCITA del binario
 [[bin]]
 name = "mechbot-3x"
 path = "src/main.rs"
+
+# También como librería para tests
+[lib]
+name = "mechbot_3x"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full", "test-util"] }
+criterion = "0.5"
+
+[[test]]
+name = "main_test"
+path = "tests/main_test.rs"
+
+[[test]]
+name = "unit_tests"
+path = "tests/unit/mod.rs"
+
+[[test]]
+name = "integration_tests"
+path = "tests/integration/mod.rs"
+
+[[example]]
+name = "basic_movement"
+path = "examples/basic_movement.rs"
+
+[[example]]
+name = "autonomous_navigation"
+path = "examples/autonomous_navigation.rs"
+
+[[example]]
+name = "remote_control"
+path = "examples/remote_control.rs"
+
+[profile.test]
+opt-level = 0
+debug = true
+
+[profile.bench]
+opt-level = 3
+debug = false
+
+[dependencies]
+rand = "0.8"

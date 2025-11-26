@@ -1,18 +1,28 @@
 [robot]
-name = "MECHBOT"
-model = "3X"
+name = "MechBot-3x-Cosmic"
+model = "MB3X-COSMIC" 
 version = "3.0.0"
 
 [sensors]
 lidar_port = "/dev/ttyUSB0"
+lidar_baudrate = 115200
 camera_index = 0
-sensor_threshold = 1000.0
+imu_i2c_address = 104
+
+[navigation]
+max_speed = 2.0
+max_acceleration = 1.0
+planning_frequency = 10
+obstacle_distance_threshold = 0.5
 
 [api]
-rest_port = 8088
-websocket_port = 8089
-api_key = ""
+rest_port = 8080
+websocket_port = 8081
+enable_cors = true
+api_key_required = false
 
 [logging]
 level = "info"
-output = "console"
+output = "logs/mechbot.log"
+max_file_size = "10MB"
+rotate = true
