@@ -9,4 +9,9 @@ impl Robot {
     pub async fn new(config: Config) -> Result<Self> {
         Ok(Robot { config })
     }
+    
+    pub async fn start(&self) -> Result<()> {
+        println!("🤖 Robot systems initialized");
+        Ok(())
+    }
 }

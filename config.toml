@@ -1,25 +1,4 @@
 [robot]
-name = "MechBot-3x-001"
+name = "MechBot-3x-Fixed"
 model = "MB3X"
 version = "3.0.0"
-[sensors]
-lidar_port = "/dev/ttyUSB0"
-lidar_baudrate = 115200
-camera_index = 0
-camera_fps = 30
-imu_i2c_address = 0x68
-[navigation]
-max_speed = 2.0  # m/s
-max_acceleration = 1.0  # m/s²
-planning_frequency = 10  # Hz
-obstacle_distance_threshold = 0.5  # meters
-[api]
-rest_port = 8080
-websocket_port = 8081
-enable_cors = true
-api_key_required = true
-[logging]
-level = "info"
-output = "logs/mechbot.log"
-max_file_size = "10MB"
-rotate = true

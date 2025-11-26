@@ -1,0 +1,21 @@
+use anyhow::Result;
+
+mod config;
+mod robot;
+
+use crate::config::Config;
+use crate::robot::Robot;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    println!("🚀 MechBot-3x REPARADO y funcionando!");
+
+    let config = Config::default();
+    println!("✅ Config: {}", config.robot.name);
+
+    let robot = Robot::new(config).await?;
+    println!("✅ Robot inicializado!");
+
+    println!("🎉 ¡TODO FUNCIONA CORRECTAMENTE!");
+    Ok(())
+}

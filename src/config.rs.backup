@@ -1,0 +1,101 @@
+use anyhow::{bail, Context, Result};
+use serde::Deserialize;
+use std::fs;
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Config {
+    pub robot: RobotConfig,
+    pub sensors: SensorsConfig,
+    pub navigation: NavigationConfig,
+    pub api: ApiConfig,
+    pub logging: LoggingConfig,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct RobotConfig {
+    pub name: String,
+    pub model: String,
+    pub version: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct SensorsConfig {
+    pub lidar_port: Option<String>,
+    pub lidar_baudrate: Option<u32>,
+    pub camera_index: Option<u32>,
+    pub camera_fps: Option<u32>,
+    pub imu_i2c_address: Option<u32>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct NavigationConfig {
+    pub max_speed: Option<f64>,
+    pub max_acceleration: Option<f64>,
+    pub planning_frequency: Option<u32>,
+    pub obstacle_distance_threshold: Option<f64>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ApiConfig {
+    pub rest_port: Option<u16>,
+    pub websocket_port: Option<u16>,
+    pub enable_cors: Option<bool>,
+    pub api_key_required: Option<bool>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct LoggingConfig {
+    pub level: Option<String>,
+    pub output: Option<String>,
+    pub max_file_size: Option<String>,
+    pub rotate: Option<bool>,
+}
+
+impl Config {
+    pub fn from_file(path: &str) -> Result<Self> {
+        let content = fs::read_to_string(path)
+            .with_context(|| format!("Failed to read config file: {}", path))?;
+        
+        let config: Self = toml::from_str(&content)
+            .with_context(|| format!("Failed to parse config file: {}", path))?;
+        
+        Ok(config)
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            robot: RobotConfig {
+                name: "MechBot-3x-001".to_string(),
+                model: "MB3X".to_string(),
+                version: "3.0.0".to_string(),
+            },
+            sensors: SensorsConfig {
+                lidar_port: Some("/dev/ttyUSB0".to_string()),
+                lidar_baudrate: Some(115200),
+                camera_index: Some(0),
+                camera_fps: Some(30),
+                imu_i2c_address: Some(0x68),
+            },
+            navigation: NavigationConfig {
+                max_speed: Some(2.0),
+                max_acceleration: Some(1.0),
+                planning_frequency: Some(10),
+                obstacle_distance_threshold: Some(0.5),
+            },
+            api: ApiConfig {
+                rest_port: Some(8080),
+                websocket_port: Some(8081),
+                enable_cors: Some(true),
+                api_key_required: Some(true),
+            },
+            logging: LoggingConfig {
+                level: Some("info".to_string()),
+                output: Some("logs/mechbot.log".to_string()),
+                max_file_size: Some("10MB".to_string()),
+                rotate: Some(true),
+            },
+        }
+    }
+}

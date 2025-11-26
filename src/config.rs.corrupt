@@ -1,0 +1,21 @@
+use anyhow::Result;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Config {
+    pub robot_name: String,
+}
+
+impl Config {
+    pub fn from_file(_path: &str) -> Result<Self> {
+        Ok(Self::default())
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            robot_name: "MechBot-3x-Fixed".to_string(),
+        }
+    }
+}

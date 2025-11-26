@@ -1,0 +1,21 @@
+=== SYSTEM INFO ===
+Linux min-PPPPP-CCC-MMMMMMMM 6.8.0-88-generic #89-Ubuntu SMP PREEMPT_DYNAMIC Sat Oct 11 01:02:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+rustc 1.91.1 (ed61e7d7e 2025-11-07)
+=== CONFIG ===
+[robot]
+name = "MechBot-3x-Fixed"
+model = "MB3X"
+version = "3.0.0"
+=== RECENT LOGS ===
+[logging]
+level = "debug"  # Para troubleshooting
+output = "file"
+=== HARDWARE ===
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 8087:0020 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 003: ID 0bda:0151 Realtek Semiconductor Corp. Mass Storage Device (Multicard Reader)
+Bus 001 Device 005: ID 30fa:2350 INSTANT USB Keyboard
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 002: ID 8087:0020 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 003: ID 046d:c016 Logitech, Inc. Optical Wheel Mouse
+Bus 002 Device 015: ID 2717:ff80 Xiaomi Inc. Mi/Redmi series (RNDIS)

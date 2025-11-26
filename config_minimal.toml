@@ -1,0 +1,16 @@
+[robot]
+name = "Mi-MechBot"
+model = "MB3X"
+version = "3.0.0"
+
+[sensors]
+# Configuración básica sin hardware
+camera_index = 0
+
+[api]
+rest_port = 8080
+websocket_port = 8081
+
+[logging]
+level = "info"
+output = "console"

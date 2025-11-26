@@ -1,0 +1,2 @@
+[vision]
+max_cache_size = 100  # Limitar cache de frames
