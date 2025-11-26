@@ -5,7 +5,11 @@
 </div>
 
 <div align="center">
-
+https://img.shields.io/badge/Estrategia-Cangrejo_Cósmico-orange
+) ![Estado](
+https://img.shields.io/badge/Estado-Funcionando_%F0%9F%8E%89-brightgreen
+) ![Filosofía](
+https://img.shields.io/badge/Filosofía-Retroceso_Productivo-blue
 [![Rust](https://img.shields.io/badge/Rust-1.81%2B-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/mechmind-dwv/mechbot-3x/rust.yml?style=for-the-badge)](https://github.com/mechmind-dwv/mechbot-3x/actions)
