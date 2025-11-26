@@ -1,0 +1,13 @@
+[logging]
+level = "info"
+output = "file"
+file_path = "/var/log/mechbot/mechbot.log"
+max_file_size = "100MB"
+rotate = true
+max_backups = 10
+json_format = true  # Para ingestión en ELK
+
+[monitoring]
+prometheus_enabled = true
+prometheus_port = 9090
+health_check_interval = 30

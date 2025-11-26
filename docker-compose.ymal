@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mechbot:
+    build: .
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./config.toml:/app/config.toml:ro
+      - ./logs:/app/logs
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+      - "/dev/video0:/dev/video0"
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=info
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'

@@ -1,0 +1,40 @@
+# config.production.toml
+[robot]
+name = "mechbot-production-01"
+model = "MB3X"
+version = "3.0.0"
+
+[sensors]
+lidar_port = "/dev/ttyUSB0"
+lidar_baudrate = 115200
+camera_index = 0
+camera_fps = 15  # Reducido para producción
+imu_i2c_address = 0x68
+
+[navigation]
+max_speed = 1.5  # Más conservador
+max_acceleration = 0.8
+planning_frequency = 5  # Menos frecuente
+
+[api]
+rest_port = 8080
+websocket_port = 8081
+enable_cors = true
+api_key_required = true
+rate_limit_requests_per_minute = 600
+
+[logging]
+level = "info"
+output = "file"
+file_path = "/var/log/mechbot/mechbot.log"
+max_file_size = "100MB"
+rotate = true
+max_backups = 10
+
+[security]
+allowed_ips = ["192.168.1.0/24", "10.0.0.0/8"]
+session_timeout_minutes = 30
+
+[monitoring]
+health_check_interval = 30
+metrics_enabled = true

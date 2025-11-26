@@ -5,9 +5,15 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-toml = "0.8"
+tokio = { version = "1.0", features = ["full", "rt-multi-thread", "macros"] }
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.0", features = ["full"] }
+toml = "0.8"
+log = "0.4"
+env_logger = "0.10"
+
+[lib]
+name = "mechbot_3x"
+path = "src/lib.rs"
 
 [[bin]]
 name = "mechbot-3x"
