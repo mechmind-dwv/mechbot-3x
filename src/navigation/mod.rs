@@ -77,20 +77,20 @@ impl NavigationController {
     pub async fn navigate_to_pose(
         &mut self,
         target_pose: RobotState,
-        current_pose: RobotState,
+        _current_pose: RobotState,
         sensor_data: &SensorData,
     ) -> Result<ControlInput, String> {
         // Actualizar SLAM con datos de sensores
-        self.slam_engine.update(current_pose, sensor_data).await?;
+        self.slam_engine.update(_current_pose, sensor_data).await?;
 
         // Obtener mapa actualizado
         let map = self.slam_engine.get_map();
 
         // Planificar ruta si no hay una actual o el objetivo cambió
-        if self.should_replan(&current_pose, &target_pose) {
+        if self.should_replan(&_current_pose, &target_pose) {
             match self
                 .path_planner
-                .plan_path(&current_pose, &target_pose, map)
+                .plan_path(&_current_pose, &target_pose, map)
                 .await
             {
 src/navigation/mod.rs                Ok(path) => {
@@ -103,7 +103,7 @@ src/navigation/mod.rs                Ok(path) => {
 
         // Seguir la ruta planificada
         if let Some(ref path) = self.current_path {
-            self.follow_path(&current_pose, path)
+            self.follow_path(&_current_pose, path)
         } else {
             Err("No path available".to_string())
         }
@@ -111,27 +111,27 @@ src/navigation/mod.rs                Ok(path) => {
 
     pub async fn explore_unknown_area(
         &mut self,
-        current_pose: RobotState,
+        _current_pose: RobotState,
         sensor_data: &SensorData,
     ) -> Result<ControlInput, String> {
         // Usar RRT para exploración en espacio desconocido
         let frontier = self.slam_engine.get_exploration_frontier();
         let exploration_target = self
             .path_planner
-            .plan_exploration(&current_pose, &frontier, self.slam_engine.get_map())
+            .plan_exploration(&_current_pose, &frontier, self.slam_engine.get_map())
             .await?;
 
-        self.navigate_to_pose(exploration_target, current_pose, sensor_data)
+        self.navigate_to_pose(exploration_target, _current_pose, sensor_data)
             .await
     }
 
-    fn should_replan(&self, current_pose: &RobotState, target_pose: &RobotState) -> bool {
+    fn should_replan(&self, __current_pose: &RobotState, target_pose: &RobotState) -> bool {
         self.current_path.is_none()
             || self.current_goal.as_ref() != Some(target_pose)
-            || self.is_path_blocked(current_pose)
+            || self.is_path_blocked(_current_pose)
     }
 
-    fn is_path_blocked(&self, current_pose: &RobotState) -> bool {
+    fn is_path_blocked(&self, __current_pose: &RobotState) -> bool {
         // Verificar si el camino actual está bloqueado por obstáculos
         if let Some(ref path) = self.current_path {
             // Verificar los próximos puntos del camino
@@ -146,7 +146,7 @@ src/navigation/mod.rs                Ok(path) => {
 
     fn follow_path(
         &self,
-        current_pose: &RobotState,
+        __current_pose: &RobotState,
         path: &[RobotState],
     ) -> Result<ControlInput, String> {
         if path.is_empty() {
@@ -154,14 +154,14 @@ src/navigation/mod.rs                Ok(path) => {
         }
 
         // Encontrar el punto más cercano en el camino
-        let lookahead_point = self.find_lookahead_point(current_pose, path);
+        let lookahead_point = self.find_lookahead_point(_current_pose, path);
 
         // Calcular error de seguimiento
-        let dx = lookahead_point.x - current_pose.x;
-        let dy = lookahead_point.y - current_pose.y;
+        let dx = lookahead_point.x - _current_pose.x;
+        let dy = lookahead_point.y - _current_pose.y;
         let target_heading = dy.atan2(dx);
 
-        let heading_error = target_heading - current_pose.theta;
+        let heading_error = target_heading - _current_pose.theta;
 
         // Control simple para seguimiento de camino
         Ok(ControlInput::new(
@@ -170,7 +170,7 @@ src/navigation/mod.rs                Ok(path) => {
         ))
     }
 
-    fn find_lookahead_point(&self, current_pose: &RobotState, path: &[RobotState]) -> RobotState {
+    fn find_lookahead_point(&self, __current_pose: &RobotState, path: &[RobotState]) -> RobotState {
         let lookahead_distance = 0.5; // 50cm de lookahead
 
         for i in 0..path.len() - 1 {
@@ -179,8 +179,8 @@ src/navigation/mod.rs                Ok(path) => {
 
             // Calcular distancia a este segmento
             let projection =
-                self.project_point_to_segment(current_pose, segment_start, segment_end);
-            let distance_to_projection = current_pose.distance_to(&projection);
+                self.project_point_to_segment(_current_pose, segment_start, segment_end);
+            let distance_to_projection = _current_pose.distance_to(&projection);
 
             if distance_to_projection <= lookahead_distance {
                 // Encontrar punto en el segmento a la distancia de lookahead
@@ -189,7 +189,7 @@ src/navigation/mod.rs                Ok(path) => {
         }
 
         // Si no se encuentra, usar el último punto
-        path.last().cloned().unwrap_or_else(|| current_pose.clone())
+        path.last().cloned().unwrap_or_else(|| _current_pose.clone())
     }
 
     fn project_point_to_segment(

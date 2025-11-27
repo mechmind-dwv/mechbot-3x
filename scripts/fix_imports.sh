@@ -1,3 +1,9 @@
+#!/bin/bash
+
+echo "📥 Arreglando imports..."
+
+# En src/lib.rs - asegurar imports correctos
+cat > src/lib_fixed.rs << 'LIBFIX'
 pub mod api;
 pub mod config;
 pub mod control;
@@ -83,3 +89,11 @@ impl ApiServer {
         // Implementación placeholder
     }
 }
+LIBFIX
+
+# Reemplazar si es mejor
+if [ -f "src/lib_fixed.rs" ]; then
+    mv src/lib_fixed.rs src/lib.rs
+fi
+
+echo "✅ Imports arreglados"

@@ -1,15 +1,5 @@
 [build]
-# Forzar target Linux
 target = "x86_64-unknown-linux-gnu"
 
 [target.x86_64-unknown-linux-gnu]
-# Configuración específica para Linux
 linker = "cc"
-
-[env]
-# Variables de entorno para compilación
-RUSTFLAGS = "--target x86_64-unknown-linux-gnu"
-
-# Add to .cargo/config.toml
-[resolver]
-incompatible-rust-versions = "fallback"

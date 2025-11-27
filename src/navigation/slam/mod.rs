@@ -147,7 +147,7 @@ impl OccupancyGridMapper {
         }
     }
 
-    pub fn find_frontiers(&self, current_pose: &RobotState) -> Vec<RobotState> {
+    pub fn find_frontiers(&self, __current_pose: &RobotState) -> Vec<RobotState> {
         let mut frontiers = Vec::new();
         let unknown_value = 0.5; // Valor que representa "desconocido" en el mapa de ocupación
 
@@ -165,9 +165,9 @@ impl OccupancyGridMapper {
 
         // Ordenar por distancia a la pose actual
         frontiers.sort_by(|a, b| {
-            current_pose
+            _current_pose
                 .distance_to(a)
-                .partial_cmp(&current_pose.distance_to(b))
+                .partial_cmp(&_current_pose.distance_to(b))
                 .unwrap()
         });
 

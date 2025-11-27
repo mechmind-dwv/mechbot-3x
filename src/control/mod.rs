@@ -94,16 +94,16 @@ impl ControlSystem {
 
     pub fn compute_pid_control(
         &mut self,
-        current_pose: &RobotState,
+        __current_pose: &RobotState,
         target_pose: &RobotState,
         dt: f64,
     ) -> ControlInput {
         // Error de posición
-        let dx = target_pose.x - current_pose.x;
-        let dy = target_pose.y - current_pose.y;
+        let dx = target_pose.x - _current_pose.x;
+        let dy = target_pose.y - _current_pose.y;
 
         // Error de orientación (normalizado a [-pi, pi])
-        let mut dtheta = target_pose.theta - current_pose.theta;
+        let mut dtheta = target_pose.theta - _current_pose.theta;
         while dtheta > std::f64::consts::PI {
             dtheta -= 2.0 * std::f64::consts::PI;
         }
