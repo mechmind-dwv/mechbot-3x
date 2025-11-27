@@ -1,8 +1,7 @@
-use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::path::PathBuf;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub robot: RobotConfig,
     pub sensors: SensorsConfig,
@@ -11,97 +10,113 @@ pub struct Config {
     pub logging: LoggingConfig,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RobotConfig {
     pub name: String,
     pub model: String,
     pub version: String,
+    pub max_speed: f64,
+    pub max_acceleration: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SensorsConfig {
-    pub lidar_port: String,
-    pub lidar_baudrate: u32,
-    pub camera_index: u32,
-    pub camera_fps: Option<u32>,
-    pub imu_i2c_address: u8,
+    pub lidar_port: Option<String>,
+    pub lidar_baudrate: Option<u32>,
+    pub camera_index: Option<u32>,
+    pub imu_i2c_address: Option<u8>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NavigationConfig {
-    pub max_speed: Option<f64>,
-    pub max_acceleration: Option<f64>,
-    pub planning_frequency: Option<u32>,
-    pub obstacle_distance_threshold: Option<f64>,
+    pub max_speed: f64,
+    pub max_acceleration: f64,
+    pub planning_frequency: u32,
+    pub obstacle_distance_threshold: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiConfig {
-    pub rest_port: u16,
-    pub websocket_port: u16,
-    pub enable_cors: Option<bool>,
-    pub api_key_required: Option<bool>,
+    pub rest_port: Option<u16>,
+    pub websocket_port: Option<u16>,
+    pub enable_cors: bool,
+    pub api_key_required: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoggingConfig {
-    pub level: Option<String>,
-    pub output: Option<String>,
-    pub max_file_size: Option<String>,
-    pub rotate: Option<bool>,
-}
-
-impl Config {
-    pub fn from_file(path: &str) -> Result<Self> {
-        let content = fs::read_to_string(path)
-            .with_context(|| format!("Failed to read config file: {}", path))?;
-
-        let config: Self = toml::from_str(&content)
-            .with_context(|| format!("Failed to parse config file: {}", path))?;
-
-        Ok(config)
-    }
-
-    pub fn save_to_file(&self, path: &str) -> Result<()> {
-        let content = toml::to_string_pretty(self)?;
-        fs::write(path, content)?;
-        Ok(())
-    }
+    pub level: String,
+    pub output: String,
+    pub max_file_size: String,
+    pub rotate: bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             robot: RobotConfig {
-                name: "MechBot-3x-001".to_string(),
+                name: "MechBot-3X".to_string(),
                 model: "MB3X".to_string(),
                 version: "3.0.0".to_string(),
+                max_speed: 2.0,
+                max_acceleration: 1.0,
             },
             sensors: SensorsConfig {
                 lidar_port: Some("/dev/ttyUSB0".to_string()),
                 lidar_baudrate: Some(115200),
                 camera_index: Some(0),
-                camera_fps: Some(30),
-                imu_i2c_address: Some(104),
+                imu_i2c_address: Some(0x68),
             },
             navigation: NavigationConfig {
-                max_speed: Some(2.0),
-                max_acceleration: Some(1.0),
-                planning_frequency: Some(10),
-                obstacle_distance_threshold: Some(0.5),
+                max_speed: 2.0,
+                max_acceleration: 1.0,
+                planning_frequency: 10,
+                obstacle_distance_threshold: 0.5,
             },
             api: ApiConfig {
                 rest_port: Some(8080),
                 websocket_port: Some(8081),
-                enable_cors: Some(true),
-                api_key_required: Some(true),
+                enable_cors: true,
+                api_key_required: true,
             },
             logging: LoggingConfig {
-                level: Some("info".to_string()),
-                output: Some("logs/mechbot.log".to_string()),
-                max_file_size: Some("10MB".to_string()),
-                rotate: Some(true),
+                level: "info".to_string(),
+                output: "logs/mechbot.log".to_string(),
+                max_file_size: "10MB".to_string(),
+                rotate: true,
             },
+        }
+    }
+}
+
+impl Config {
+    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> anyhow::Result<Self> {
+        let content = std::fs::read_to_string(path)?;
+        let config: Config = toml::from_str(&content)?;
+        Ok(config)
+    }
+
+    pub fn to_file<P: AsRef<std::path::Path>>(&self, path: P) -> anyhow::Result<()> {
+        let content = toml::to_string_pretty(self)?;
+        std::fs::write(path, content)?;
+        Ok(())
+    }
+
+    pub fn validate(&self) -> Result<(), Vec<String>> {
+        let mut errors = Vec::new();
+
+        if self.robot.max_speed <= 0.0 {
+            errors.push("Robot max_speed must be positive".to_string());
+        }
+
+        if self.navigation.obstacle_distance_threshold <= 0.0 {
+            errors.push("Obstacle distance threshold must be positive".to_string());
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
         }
     }
 }

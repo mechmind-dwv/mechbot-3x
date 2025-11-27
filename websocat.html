@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script>
+        const ws = new WebSocket('ws://localhost:8081/telemetry');
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('Telemetría:', data);
+            document.getElementById('output').innerHTML = 
+                `Posición: x=${data.position.x.toFixed(2)}, y=${data.position.y.toFixed(2)}<br>
+                 Batería: ${data.battery_level.toFixed(1)}%<br>
+                 Objetos detectados: ${data.sensors.camera.objects_detected}`;
+        };
+        
+        ws.onopen = () => console.log('Conectado al WebSocket');
+    </script>
+    <div id="output">Conectando...</div>
+</body>
+</html>

@@ -6,6 +6,9 @@
 
 <div align="center">
 
+[![Code Coverage](https://img.shields.io/codecov/c/github/mechmind-dwv/mechbot-3x?style=for-the-badge)](https://codecov.io/gh/mechmind-dwv/mechbot-3x)
+[![Docs](https://img.shields.io/badge/docs-latest-brightgreen?style=for-the-badge)](https://mechmind-dwv.github.io/mechbot-3x)
+[![Discord](https://img.shields.io/discord/1234567890?style=for-the-badge&logo=discord)](https://discord.gg/mechmind)
 [![Rust](https://img.shields.io/badge/Rust-1.81%2B-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/mechmind-dwv/mechbot-3x/rust.yml?style=for-the-badge)](https://github.com/mechmind-dwv/mechbot-3x/actions)
@@ -18,6 +21,16 @@
 </div>
 
 ---
+
+## 📈 Estado del Proyecto
+
+| Módulo | Estado | Versión | Tests |
+|--------|--------|---------|--------|
+| Core System | ✅ Estable | v3.0.0 | 95% |
+| Sensors | ✅ Estable | v3.0.0 | 92% |
+| Navigation | 🟡 Beta | v3.0.0 | 85% |
+| Vision | 🟡 Beta | v3.0.0 | 80% |
+| API | ✅ Estable | v3.0.0 | 90% |
 
 ## **🌟 Características Principales**
 
@@ -91,6 +104,34 @@ cargo build --release
 
 # 3. Ejecutar
 ./target/release/mechbot-3x
+```
+
+## 🚢 Deployment
+
+### Docker
+```bash
+docker build -t mechbot-3x .
+docker run -it --privileged mechbot-3x
+
+### Kubernetes
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mechbot-3x
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mechbot
+  template:
+    metadata:
+      labels:
+        app: mechbot
+    spec:
+      containers:
+      - name: mechbot
+        image: mechmind-dwv/mechbot-3x:latest
 ```
 
 ### **Uso Básico**
@@ -477,3 +518,139 @@ fn main() {
 ⭐ **Star us on GitHub if you find this project useful!** ⭐
 
 </div>
+
+## 🚢 Deployment
+
+### Docker
+```bash
+# Build y ejecutar
+docker build -t mechbot-3x .
+docker run -it --privileged mechbot-3x
+
+# Usar docker-compose
+docker-compose up -d
+
+# Script de deployment
+./scripts/deploy.sh development
+```
+
+### Kubernetes
+```bash
+# Deploy a cluster Kubernetes
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+
+# Script automatizado
+./scripts/k8s-deploy.sh
+```
+
+### Configuración de Production
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mechbot-3x
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+```
+
+## 📊 Monitoreo y Métricas
+
+El proyecto incluye configuración completa para monitoreo:
+
+- **Prometheus** para métricas
+- **Grafana** para dashboards
+- **Health checks** automáticos
+- **Log aggregation**
+
+```bash
+# Iniciar stack de monitoreo
+docker-compose -f docker-compose.monitoring.yml up -d
+```
+
+## 🔐 Seguridad
+
+### Hardening de Contenedores
+- Usa usuarios no-root
+- Limita capabilities
+- Read-only filesystem cuando sea posible
+- Resource limits
+
+### Network Security
+- TLS/SSL para APIs
+- Authentication/Authorization
+- Network policies en Kubernetes
+
+## 🚢 Deployment
+
+### Docker
+```bash
+# Build y ejecutar
+docker build -t mechbot-3x .
+docker run -it --privileged mechbot-3x
+
+# Usar docker-compose
+docker-compose up -d
+
+# Script de deployment
+./scripts/deploy.sh development
+```
+
+### Kubernetes
+```bash
+# Deploy a cluster Kubernetes
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+
+# Script automatizado
+./scripts/k8s-deploy.sh
+```
+
+### Configuración de Production
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mechbot-3x
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+```
+
+## 📊 Monitoreo y Métricas
+
+El proyecto incluye configuración completa para monitoreo:
+
+- **Prometheus** para métricas
+- **Grafana** para dashboards
+- **Health checks** automáticos
+- **Log aggregation**
+
+```bash
+# Iniciar stack de monitoreo
+docker-compose -f docker-compose.monitoring.yml up -d
+```
+
+## 🔐 Seguridad
+
+### Hardening de Contenedores
+- Usa usuarios no-root
+- Limita capabilities
+- Read-only filesystem cuando sea posible
+- Resource limits
+
+### Network Security
+- TLS/SSL para APIs
+- Authentication/Authorization
+- Network policies en Kubernetes

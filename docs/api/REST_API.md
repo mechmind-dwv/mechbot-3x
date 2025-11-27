@@ -4,7 +4,57 @@
 
 ```bash
 # Todas las requests requieren API Key
-curl -H "X-API-Key: your-secret-key" http://localhost:8080/api/v1/status
+curl -H "X-API-Key: your-secret-key" http://localhost:8088/api/v1/status
+Veo que todavía tienes el problema de la variable `RUSTUP_TOOLCHAIN`. Vamos a solucionarlo definitivamente y luego crear la documentación API.
+
+**Primero, solucionemos el problema de Rust:**
+
+```bash
+# 1. Comentar la línea problemática en .bashrc
+sed -i 's/export RUSTUP_TOOLCHAIN=nightly-2024-05-01/# export RUSTUP_TOOLCHAIN=nightly-2024-05-01/' ~/.bashrc
+
+# 2. Recargar la configuración
+source ~/.bashrc
+
+# 3. Verificar que la variable ya no está activa
+echo $RUSTUP_TOOLCHAIN
+
+# 4. Verificar la versión de Rust
+rustc --version
+
+# 5. Limpiar y compilar
+cargo clean
+cargo build
+```
+
+**Ahora, cambiemos los puertos a 8088 y 8089:**
+
+```bash
+# Cambiar puerto 8080 a 8088 en config.toml
+sed -i 's/rest_port = 8080/rest_port = 8088/' config.toml
+
+# Cambiar puerto 8080 a 8088 en src/config.rs
+sed -i 's/rest_port: Some(8080)/rest_port: Some(8088)/' src/config.rs
+
+# Verificar los cambios
+grep -r "8088\|8089" config.toml src/config.rs
+```
+
+**Crear la documentación API en el directorio docs:**
+
+```bash
+# Crear directorio de documentación API si no existe
+mkdir -p docs/api
+
+# Crear el archivo de documentación REST API
+cat > docs/api/REST_API.md << 'EOF'
+# API REST - Referencia Completa
+
+## 🔐 Autenticación
+
+```bash
+# Todas las requests requieren API Key
+curl -H "X-API-Key: your-secret-key" http://localhost:8088/api/v1/status
 ```
 
 ## 📋 Endpoints Detallados
@@ -101,202 +151,3 @@ curl -H "X-API-Key: your-secret-key" http://localhost:8080/api/v1/status
 }
 ```
 
-### /api/v1/control/move
-**Método:** POST  
-**Descripción:** Comando de movimiento a coordenadas específicas
-
-**Body:**
-```json
-{
-  "target": {"x": 5.0, "y": 3.0, "theta": 1.57},
-  "speed": {"linear": 0.5, "angular": 0.3},
-  "timeout_seconds": 30,
-  "obstacle_avoidance": true,
-  "task_id": "move_12345"
-}
-```
-
-**Respuesta:**
-```json
-{
-  "success": true,
-  "task_id": "move_12345",
-  "estimated_duration": 12.5,
-  "path_length": 6.2
-}
-```
-
-### /api/v1/control/velocity
-**Método:** POST  
-**Descripción:** Control directo de velocidad
-
-**Body:**
-```json
-{
-  "linear": {"x": 0.3, "y": 0.0, "z": 0.0},
-  "angular": {"x": 0.0, "y": 0.0, "z": 0.1}
-}
-```
-
-### /api/v1/control/stop
-**Método:** POST  
-**Descripción:** Parada de emergencia o normal
-
-**Body:**
-```json
-{
-  "emergency": false,
-  "reason": "user_request"
-}
-```
-
-### /api/v1/vision/detect
-**Método:** POST  
-**Descripción:** Detección de objetos en frame actual
-
-**Respuesta:**
-```json
-{
-  "detections": [
-    {
-      "class_id": 0,
-      "class_name": "person",
-      "confidence": 0.87,
-      "bbox": {"x": 100, "y": 150, "width": 50, "height": 180},
-      "position": {"x": 2.1, "y": 1.5, "z": 0.0}
-    }
-  ],
-  "processing_time_ms": 45.2
-}
-```
-
-### /api/v1/system/reboot
-**Método:** POST  
-**Descripción:** Reinicio controlado del sistema
-
-**Body:**
-```json
-{
-  "reason": "software_update",
-  "delay_seconds": 10
-}
-```
-
-### /api/v1/logs
-**Método:** GET  
-**Descripción:** Obtención de logs del sistema
-
-**Parámetros Query:**
-- `level` (opcional): error, warn, info, debug
-- `since` (opcional): timestamp ISO
-- `limit` (opcional): número de entradas
-
-**Respuesta:**
-```json
-{
-  "logs": [
-    {
-      "timestamp": "2024-01-15T10:29:55Z",
-      "level": "info",
-      "module": "navigation",
-      "message": "Path planning completed",
-      "data": {"path_length": 5.3, "planning_time": 0.12}
-    }
-  ]
-}
-```
-
-## 🚨 Códigos de Error HTTP
-
-| Código | Error | Descripción |
-|--------|-------|-------------|
-| 200 | OK | Request exitosa |
-| 400 | Bad Request | Parámetros inválidos |
-| 401 | Unauthorized | API Key missing o inválida |
-| 403 | Forbidden | Permisos insuficientes |
-| 404 | Not Found | Recurso no existe |
-| 409 | Conflict | Estado incompatible |
-| 422 | Unprocessable Entity | Datos inválidos |
-| 429 | Too Many Requests | Rate limiting |
-| 500 | Internal Server Error | Error del servidor |
-| 503 | Service Unavailable | Sistema no listo |
-
-## 📊 Ejemplos de Uso
-
-### Python Client
-```python
-import requests
-import json
-
-class MechBotClient:
-    def __init__(self, base_url="http://localhost:8080", api_key="your-key"):
-        self.base_url = base_url
-        self.headers = {
-            "X-API-Key": api_key,
-            "Content-Type": "application/json"
-        }
-    
-    def get_status(self):
-        response = requests.get(
-            f"{self.base_url}/api/v1/status",
-            headers=self.headers
-        )
-        return response.json()
-    
-    def move_to(self, x, y, theta=0.0):
-        data = {
-            "target": {"x": x, "y": y, "theta": theta},
-            "speed": {"linear": 0.5, "angular": 0.3},
-            "obstacle_avoidance": True
-        }
-        response = requests.post(
-            f"{self.base_url}/api/v1/control/move",
-            headers=self.headers,
-            data=json.dumps(data)
-        )
-        return response.json()
-    
-    def get_sensor_data(self):
-        response = requests.get(
-            f"{self.base_url}/api/v1/sensors/data", 
-            headers=self.headers
-        )
-        return response.json()
-
-# Uso
-bot = MechBotClient()
-status = bot.get_status()
-print(f"Battery: {status['systems']['power']['battery_level']}%")
-```
-
-### cURL Examples
-```bash
-# Get status
-curl -H "X-API-Key: secret" http://localhost:8080/api/v1/status
-
-# Move to position
-curl -X POST -H "X-API-Key: secret" -H "Content-Type: application/json" \
-  -d '{"target":{"x":5,"y":3}, "speed":{"linear":0.5}}' \
-  http://localhost:8080/api/v1/control/move
-
-# Get logs
-curl -H "X-API-Key: secret" \
-  "http://localhost:8080/api/v1/logs?level=error&limit=10"
-```
-
-## 🔐 Seguridad
-
-### API Keys
-- Generar keys únicas por cliente
-- Rotar keys periódicamente
-- Registrar uso para auditoría
-
-### Rate Limiting
-- 1000 requests por hora por API key
-- Límites separados por endpoint
-- Headers de rate limiting en respuestas
-
-### HTTPS
-- Siempre usar HTTPS en producción
-- Certificados TLS válidos
-- HSTS habilitado

@@ -3,17 +3,42 @@ name = "mechbot-3x"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "mechbot-3x"
-path = "src/main.rs"
-
 [dependencies]
-anyhow = "1.0"
+# Core system
 tokio = { version = "1.0", features = ["full", "macros", "rt-multi-thread"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
 log = "0.4"
 env_logger = "0.10"
+
+# Serialization
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 toml = "0.8"
 
+# Web API
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors"] }
+
+# WebSockets
+tokio-tungstenite = "0.20"
+futures = "0.3"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+
 [dev-dependencies]
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["full", "macros", "rt-multi-thread"] }
+tempfile = "3.8"
+
+# Para tests de serialización
+serde_test = "1.0"
+
+[[test]]
+name = "integration_tests"
+path = "tests/integration_tests.rs"
+harness = true

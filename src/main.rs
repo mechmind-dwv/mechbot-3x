@@ -1,4 +1,3 @@
-use mechbot_3x::Sensor;
 use anyhow::Result;
 use log::{info, warn};
 use mechbot_3x::{initialize_system, Config};
@@ -57,7 +56,11 @@ async fn main() -> Result<()> {
                     "🔴 Desconectado"
                 }
             );
-            info!("   - Visión: {}", "🟢 Modelos cargados");
+
+            // Mostrar características de visión
+            let vision_features = vision.get_available_features();
+            info!("   - Visión: 🟢 {} cargado", vision_features.join(", "));
+
             info!(
                 "   - API: {}",
                 if api_server.is_running() {
@@ -68,6 +71,44 @@ async fn main() -> Result<()> {
             );
             info!("   - Navegación: 🟢 Controlador listo");
 
+            // Iniciar servidores API
+            let api_handle = tokio::spawn(async move {
+                if let Err(e) = api_server.start().await {
+                    eprintln!("❌ Error en servidor API: {}", e);
+                }
+            });
+
+            info!("🌐 Servidores API iniciados:");
+            info!("   - REST:    http://localhost:{}", api_server.port);
+            info!("   - WebSocket: ws://localhost:{}", api_server.port + 1);
+            info!("");
+            info!("📖 Endpoints disponibles:");
+            info!(
+                "   GET  http://localhost:{}/api/v1/status    - Estado del robot",
+                api_server.port
+            );
+            info!(
+                "   POST http://localhost:{}/api/v1/move      - Mover a posición",
+                api_server.port
+            );
+            info!(
+                "   GET  http://localhost:{}/api/v1/map       - Mapa actual",
+                api_server.port
+            );
+            info!(
+                "   GET  http://localhost:{}/api/v1/sensors   - Datos de sensores",
+                api_server.port
+            );
+            info!(
+                "   GET  http://localhost:{}/health           - Health check",
+                api_server.port
+            );
+            info!("");
+            info!(
+                "🔌 WebSocket: ws://localhost:{}/telemetry",
+                api_server.port + 1
+            );
+
             // Ejecutar una misión de demostración simple
             info!("🎯 Iniciando misión de demostración...");
 
@@ -76,21 +117,25 @@ async fn main() -> Result<()> {
 
             for (i, &target) in demo_targets.iter().enumerate() {
                 info!("📍 Navegando al punto {}: {:?}", i + 1, target);
-
-                // En una implementación real aquí iría la lógica de navegación
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-
+                tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
                 info!("✅ Punto {} alcanzado", i + 1);
             }
 
             info!("🎉 Misión de demostración completada!");
 
-            // Mantener el sistema corriendo por un tiempo
-            info!("⏰ Sistema operativo por 10 segundos...");
-            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+            // Mantener el sistema corriendo
+            info!("⏰ Sistema operativo. Presiona Ctrl+C para detener...");
 
+            // Esperar a que el usuario detenga el sistema
+            tokio::signal::ctrl_c().await?;
+
+            info!("🛑 Deteniendo sistema...");
             api_server.stop();
-            info!("🛑 Sistema apagado correctamente");
+
+            // Esperar a que el servidor API se detenga
+            api_handle.await?;
+
+            info!("🎊 Sistema apagado correctamente. ¡Hasta la próxima!");
         }
         Err(e) => {
             eprintln!("❌ Error inicializando el sistema: {}", e);

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mechbot
+  labels:
+    name: mechbot
+    environment: production
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mechbot-role
+  namespace: mechbot
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mechbot-role-binding
+  namespace: mechbot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mechbot-role
+subjects:
+- kind: ServiceAccount
+  name: mechbot-service-account
+  namespace: mechbot
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mechbot-service-account
+  namespace: mechbot

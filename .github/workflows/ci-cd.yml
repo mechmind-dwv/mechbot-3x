@@ -1,0 +1,95 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+        components: rustfmt, clippy
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Check formatting
+      run: cargo fmt -- --check
+    
+    - name: Clippy check
+      run: cargo clippy -- -D warnings
+    
+    - name: Run tests
+      run: cargo test
+    
+    - name: Build release
+      run: cargo build --release
+    
+    - name: Upload binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: mechbot-3x-binary
+        path: target/release/mechbot-3x
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: |
+        docker build -t mechbot-3x:${{ github.sha }} .
+        docker build -t mechbot-3x:latest .
+    
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Push Docker image
+      run: |
+        docker tag mechbot-3x:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/mechbot-3x:${{ github.sha }}
+        docker tag mechbot-3x:latest ${{ secrets.DOCKERHUB_USERNAME }}/mechbot-3x:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mechbot-3x:${{ github.sha }}
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mechbot-3x:latest
+
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Kubernetes
+      run: |
+        echo "Deploying to staging environment..."
+        # Aquí irían los comandos de deployment reales
+        # kubectl apply -f k8s/deployment.yaml
